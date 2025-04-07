@@ -1,0 +1,15 @@
+<?php
+// 数据库配置
+$servername = "8.138.89.207";
+$username = "JIEHUA2002";
+$password = "Lf253212";
+$dbname = "kpp";
+
+// 创建数据库连接
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// 检查连接是否成功
+if ($conn->connect_error) {
+    die("连接失败: " . $conn->connect_error);
+}
+?>    
