@@ -6,18 +6,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST["username"];
     $password = $_POST["password"];
 
-    // 这里可以添加更多的输入验证逻辑，比如检查用户名和密码的格式
-
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-    $sql = "INSERT INTO users (username, password) VALUES ('$username', '$hashed_password')";
-
-    if ($conn->query($sql) === TRUE) {
-        // 注册成功，跳转到登录页面
-        header("Location: login.php");
-        exit;
+    // 简单的输入验证
+    if (empty($username) || empty($password)) {
+        $error_message = "用户名和密码不能为空";
     } else {
-        $error_message = "注册失败: " . $conn->error;
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // 使用预处理语句避免 SQL 注入
+        $stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+        $stmt->bind_param("ss", $username, $hashed_password);
+
+        if ($stmt->execute()) {
+            // 注册成功，跳转到登录页面
+            header("Location: login.php");
+            exit;
+        } else {
+            $error_message = "注册失败: " . $stmt->error;
+        }
+        $stmt->close();
     }
 }
 ?>
@@ -56,4 +62,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </body>
 
-</html>    
+</html>

@@ -1,8 +1,8 @@
 <?php
 // 数据库配置
 $servername = "8.138.89.207";
-$username = "JIEHUA2002";
-$password = "Lf253212";
+$username = "kpp_user";
+$password = "123456";
 $dbname = "kpp";
 
 // 创建数据库连接

@@ -5,17 +5,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $sql = "SELECT id FROM users WHERE username = '$username' AND password = '$password'";
-    $result = $conn->query($sql);
+    // 使用预处理语句避免 SQL 注入
+    $stmt = $conn->prepare("SELECT id, password FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if ($result->num_rows == 1) {
-        session_start();
-        $_SESSION['user_id'] = $result->fetch_assoc()['id'];
-        header("Location: sign_in.php");
-        exit();
+        $row = $result->fetch_assoc();
+        if (password_verify($password, $row['password'])) {
+            session_start();
+            $_SESSION['user_id'] = $row['id'];
+            header("Location: sign_in.php");
+            exit();
+        } else {
+            $error = "用户名或密码错误";
+        }
     } else {
         $error = "用户名或密码错误";
     }
+    $stmt->close();
 }
 ?>
 <!DOCTYPE html>

@@ -13,8 +13,11 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 
 // 检查用户记录是否存在
-$check_user_sql = "SELECT id FROM users WHERE id = $user_id";
-$check_user_result = $conn->query($check_user_sql);
+$check_user_sql = "SELECT id FROM users WHERE id = ?";
+$check_user_stmt = $conn->prepare($check_user_sql);
+$check_user_stmt->bind_param("i", $user_id);
+$check_user_stmt->execute();
+$check_user_result = $check_user_stmt->get_result();
 
 if ($check_user_result->num_rows == 0) {
     $message = "用户记录不存在，请重新登录或联系管理员。";
@@ -22,32 +25,41 @@ if ($check_user_result->num_rows == 0) {
     $today = date('Y-m-d');
 
     // 检查用户今天是否已经签到
-    $sql = "SELECT id FROM sign_ins WHERE user_id = $user_id AND sign_in_date = '$today'";
-    $result = $conn->query($sql);
+    $sql = "SELECT id FROM sign_ins WHERE user_id = ? AND sign_in_date = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("is", $user_id, $today);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if ($result->num_rows == 0) {
         // 用户今天还未签到，插入签到记录
-        $insert_sql = "INSERT INTO sign_ins (user_id, sign_in_date) VALUES ($user_id, '$today')";
-        if ($conn->query($insert_sql) === TRUE) {
+        $insert_sql = "INSERT INTO sign_ins (user_id, sign_in_date, sign_date) VALUES (?, ?, ?)";
+        $insert_stmt = $conn->prepare($insert_sql);
+        $insert_stmt->bind_param("iss", $user_id, $today, $today);
+        if ($insert_stmt->execute()) {
             // 随机选择一张卡牌发放给用户
             $card_sql = "SELECT id, card_image FROM cards ORDER BY RAND() LIMIT 1";
-            $card_result = $conn->query($card_sql);
+            $card_stmt = $conn->prepare($card_sql);
+            $card_stmt->execute();
+            $card_result = $card_stmt->get_result();
             if ($card_result->num_rows == 1) {
                 $card = $card_result->fetch_assoc();
                 $card_id = $card['id'];
                 $card_image = $card['card_image'];
                 // 插入用户卡牌记录
-                $user_card_sql = "INSERT INTO user_cards (user_id, card_id) VALUES ($user_id, $card_id)";
-                if ($conn->query($user_card_sql) === TRUE) {
+                $user_card_sql = "INSERT INTO user_cards (user_id, card_id) VALUES (?, ?)";
+                $user_card_stmt = $conn->prepare($user_card_sql);
+                $user_card_stmt->bind_param("ii", $user_id, $card_id);
+                if ($user_card_stmt->execute()) {
                     $message = "签到成功！你获得了一张卡牌。";
                 } else {
-                    $message = "签到成功，但发放卡牌失败: " . $conn->error;
+                    $message = "签到成功，但发放卡牌失败: " . $user_card_stmt->error;
                 }
             } else {
                 $message = "签到成功，但没有可用的卡牌发放。";
             }
         } else {
-            $message = "签到失败: " . $conn->error;
+            $message = "签到失败: " . $insert_stmt->error;
         }
     } else {
         $message = "你今天已经签到过了。";
@@ -86,4 +98,4 @@ if ($check_user_result->num_rows == 0) {
     </div>
 </body>
 
-</html>    
+</html>

@@ -1,7 +1,7 @@
 <?php
 // 数据库配置
 $servername = "8.138.89.207";
-$username = "root";
+$username = "kpp_user";
 $password = "123456";
 $dbname = "kpp";
 
