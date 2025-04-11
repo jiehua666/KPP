@@ -21,6 +21,7 @@ $root_url = $scheme . '://' . $_SERVER['HTTP_HOST'];
                 <li><a href="<?php echo $root_url; ?>/pages/sign_in.php" class="text-white hover:underline">签到</a></li>
                 <li><a href="<?php echo $root_url; ?>/pages/user_profile.php" class="text-white hover:underline">个人中心</a></li>
                 <li><a href="<?php echo $root_url; ?>/pages/trade.php" class="text-white hover:underline">交易</a></li>
+                <li><a href="<?php echo $root_url; ?>/pages/store.php" class="text-white hover:underline">商店</a></li>
                 <li><a href="<?php echo $root_url; ?>/pages/logout.php" class="text-white hover:underline">退出登录</a></li>
             <?php else: ?>
                 <li><a href="<?php echo $root_url; ?>/pages/login.php" class="text-white hover:underline">签到</a></li>
